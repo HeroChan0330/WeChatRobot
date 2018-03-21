@@ -1,15 +1,15 @@
 #-*-coding:utf8-*-
 import BaiduTranslation
 
-def ReceivedText(text):#如果直接返回对应内容而不经过AI就把第0个元素复制true
+def ReceivedText(text):#转发给小冰前的信息处理
     return text
 
-def ResponseText(rcvText,rspText):
-    #print "origin text:"+rspText
-    res=BaiduTranslation.Translate("auto","yue",rspText.encode("utf8"))
-    #print "translate text:"+res
-    return res
+def ResponseText(rcvText,rspText):#从小冰接收到信息的后处理
+    #res=BaiduTranslation.Translate("auto","yue",rspText)
+    #return res
+    #print rspText
+    return rspText.decode('utf8')
 
 if __name__=="__main__":
     print ReceivedText("Hello?")
-    print ResponseText("",u"吃了饭没aaa")
+    print ResponseText("","吃了饭没aaa")

@@ -1,52 +1,48 @@
 # -*- coding: utf8 -*-
 from wxpy import *
-from queue import Queue
-import Turing
-import msxiaoiceapi.XiaoBing as XBAPI
+import XiaoIce.XiaoIce as XiaoIce
 import TextHandler
 import RandomExpression
 
-XBAPI.Init()
+XiaoIce.Init()
 robot = Bot(cache_path=True)
-mesQueue=Queue()
+
+#从控制台获取输入，好友列表中需要转发机器人的好友序号
+#如果为0，则转发所有好友
+#不为0则用'|'间隔序号
+index=1
+friendList=[]
+temp=robot.friends()
+for friend in temp:
+    print '%d:%s'%(index,friend)
+    index+=1
+command=raw_input()
+if command=='0':
+    friendList=robot.friends()
+else:
+    for i in command.split('|'):
+        friendList.append(temp[int(i)-1])
 
 
-def ReceiveFromXB(msg):
-    print "received from xb"
-    global mesQueue
-    requestMsg=mesQueue.get()
-    target=requestMsg.sender
-    content=msg.text
-    target.send_msg(content)
-    print "response:"+target.name+":"+content
-
-def MsgEnQueue(msg):
-    global mesQueue
-    mesQueue.put(msg)
-
-
-def MsgHandler(msg):
-    print "Handling"
-    print msg.sender.name
-    if msg.sender.name==u'小冰':
-        ReceiveFromXB(msg)
-    else:
-        print "receive:"+msg
-        SendToXB(msg)
-        
-@robot.register(robot.friends(),[TEXT,PICTURE])
+@robot.register(friendList,[TEXT,PICTURE])
 def print_messages(msg):
     if msg.type==TEXT:
-        print(msg)
+        print '>>>',msg
         #print type(msg.text)
         temp=TextHandler.ReceivedText(msg.text)
-        res=XBAPI.GetResponse(temp)
-        res2=TextHandler.ResponseText(temp,res)
-        print res2
-        msg.sender.send_msg(u'[AI回复]'+res2)
-        #MsgHandler(msg)
+        res=XiaoIce.GetResponse(temp)
+        #print res.type+res.content
+        if res.type=='text':
+            res2=TextHandler.ResponseText(temp,res.content)
+            print u'%s<<<'%msg.sender.name+res2
+            msg.sender.send_msg(u'「小冰」'+res2)
+        elif res.type=='image':
+            imagePath=XiaoIce.GetImage(res.content)
+            msg.sender.send_image(imagePath)
     elif msg.type==PICTURE:
         msg.sender.send_image(RandomExpression.GetRandomExp())
+    elif msg.type==RECORDING:
+        pass
 
 embed()
 

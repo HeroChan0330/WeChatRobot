@@ -62,8 +62,10 @@ def GetReply():
             if int(temp['data']['oldid'])<=oldId:#消息重复，重新获取
                 time.sleep(0.3)
                 continue
-            content=re.findall('<p class="page">(.*?)((<img(?:(.*?))/>)*)</p>',temp['data']['html'])
-            if len(content)==0:
+            regexMatch=re.findall('<p class="page">(.*?)</p>',temp['data']['html'])
+            
+            #print content
+            if len(regexMatch)==0:
                 res.type='image'
                 content=re.findall('<img src="(.*?)"',temp['data']['html'])
                 if len(content)==0:
@@ -73,7 +75,9 @@ def GetReply():
                 res.content=content[1]#大图
             else:
                 #print content
-                content=content[0][0].encode('utf8')
+                #print temp['data']['html']
+                content=re.sub('<img(.*?)>',' ',regexMatch[0])
+                content=content.encode('utf8')
                 if content==prevMsg:
                     time.sleep(0.3)
                     continue
